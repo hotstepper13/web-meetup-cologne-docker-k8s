@@ -55,3 +55,23 @@ Pull docker image from remote registry
 ```
 docker pull <registryurl>/webmeetup:latest
 ```
+
+Show all docker containers (even stopped ones)
+```
+docker ps -a
+```
+
+Stopping a container from daemon
+```
+docker stop <id or name>
+```
+
+Removing a container from daemon
+```
+docker rm <id or name>
+```
+
+Running a local webserver container
+```
+docker run --rm -p 8080:80 -d webmeetup-webserver:latest
+```
