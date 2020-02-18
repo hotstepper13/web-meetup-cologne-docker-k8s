@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: webmeetup-fmtest
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 80
+  selector:
+    app: webmeetup-fmtest
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webmeetup-fmtest
+spec:
+  revisionHistoryLimit: 0
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+        maxUnavailable: 20%
+        maxSurge: 0
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webmeetup-fmtest
+  template:
+    metadata:
+      labels:
+        app: webmeetup-fmtest
+    spec:
+      containers:
+      - name: webmeetup-fmtest
+        image: your-registry.example.org/webmeetup/demo:yellow # needs to be replaced with your registry
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 80
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 60
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          successThreshold: 2
+          failureThreshold: 2
+          timeoutSeconds: 5
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "500m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+      imagePullSecrets:
+      - name: registrypullsecret # needs to be present in k8s to communicate to registry

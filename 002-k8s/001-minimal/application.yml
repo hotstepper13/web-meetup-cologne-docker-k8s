@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: webmeetup-fmtest
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 80
+  selector:
+    app: webmeetup-fmtest
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webmeetup-fmtest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webmeetup-fmtest
+  template:
+    metadata:
+      labels:
+        app: webmeetup-fmtest
+    spec:
+      containers:
+      - name: webmeetup-fmtest
+        image: your-registry.example.org/webmeetup/demo:yellow # needs to be replaced with your registry
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 80
+      imagePullSecrets:
+      - name: registrypullsecret # needs to be present in k8s to communicate to registry

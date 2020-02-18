@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: webmeetup-fmtest-black
+spec:
+  type: Service
+  ports:
+  - name: http
+    port: 80
+  selector:
+    app: webmeetup-fmtest-black
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webmeetup-fmtest-black
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webmeetup-fmtest-black
+  template:
+    metadata:
+      labels:
+        app: webmeetup-fmtest-black
+    spec:
+      containers:
+      - name: webmeetup-fmtest
+        image: your-registry.example.org/webmeetup/demo:black # needs to be replaced with your registry
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 80
+      imagePullSecrets:
+      - name: registrypullsecret # needs to be present in k8s to communicate to registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webmeetup-fmtest-yellow
+spec:
+  type: Service
+  ports:
+  - name: http
+    port: 80
+  selector:
+    app: webmeetup-fmtest-yellow
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webmeetup-fmtest-yellow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webmeetup-fmtest-yellow
+  template:
+    metadata:
+      labels:
+        app: webmeetup-fmtest-yellow
+    spec:
+      containers:
+      - name: webmeetup-fmtest
+        image: your-registry.example.org/webmeetup/demo:yellow # needs to be replaced with your registry
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 80
+      imagePullSecrets:
+      - name: registrypullsecret # needs to be present in k8s to communicate to registry
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: webmeetup-fmtest-ingress
+  namespace: ingress-basic
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+  - http:
+      paths:
+      - backend:
+          serviceName: webmeetup-fmtest-yellow
+          servicePort: 80
+        path: /black/(.*)
+      - backend:
+          serviceName: webmeetup-fmtest-black
+          servicePort: 80
+        path: /yellow/(.*)
